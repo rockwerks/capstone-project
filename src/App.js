@@ -19,13 +19,12 @@ function App() {
           Learn React
         </a>
       </header>
+      <div className="MyButton">
+        <form action="/api/hello" method="POST">
+          <button>Click Me!</button>
+        </form>
+      </div>
     </div>
-  );
-}
-
-function myButton() {
-  return (
-    <button>Click Me!</button>
   );
 }
 

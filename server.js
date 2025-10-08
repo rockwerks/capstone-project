@@ -28,6 +28,14 @@ app.get('/api/hello', async (req, res) => {
   res.json({ message: 'Hello from the API', data: results });
 });
 
+app.delete('/api/hello', (req, res) => {
+  res.json({ message: 'DELETE request received' });
+});
+
+app.post('/api/hello', (req, res) => {
+  res.json({ message: 'POST request received' });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });     
