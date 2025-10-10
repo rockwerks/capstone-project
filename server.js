@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const router = express.Router();
 const path = require('path');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -33,7 +34,7 @@ app.delete('/api/hello', (req, res) => {
 });
 
 app.post('/api/hello', (req, res) => {
-  res.json({ message: 'POST request received' });
+  res.json({ message: 'POST requesat received' });
 });
 
 app.listen(port, () => {
