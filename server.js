@@ -34,7 +34,7 @@ app.delete('/api/hello', (req, res) => {
 });
 
 app.post('/api/hello', (req, res) => {
-  res.json({ message: 'POST requesat received' });
+  res.json({ message: 'POST request received' });
 });
 
 app.listen(port, () => {
