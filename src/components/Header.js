@@ -1,34 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './Login';
 import './Header.css';
 
 const Header = ({ title = "Location Scheduler" }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
+  const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const handleLogin = async (inputUsername, password) => {
-    // Simulate API call - replace with your actual authentication logic
+  // Check authentication status on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
     try {
-      // For demo purposes, accept any username with password "password"
-      // In a real app, you'd make an API call to your backend
-      if (password === 'password') {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (data.isAuthenticated) {
         setIsAuthenticated(true);
-        setUsername(inputUsername);
-        setShowLoginModal(false);
-        return Promise.resolve();
-      } else {
-        throw new Error('Invalid credentials');
+        setUser(data.user);
       }
     } catch (error) {
-      throw error;
+      console.error('Error checking auth status:', error);
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUsername('');
-    setShowLoginModal(false);
+  const handleGoogleLogin = () => {
+    // Redirect to Google OAuth
+    window.location.href = '/auth/google';
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        credentials: 'include'
+      });
+      setIsAuthenticated(false);
+      setUser(null);
+      setShowLoginModal(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   const toggleLoginModal = () => {
@@ -44,7 +59,8 @@ const Header = ({ title = "Location Scheduler" }) => {
             {isAuthenticated ? (
               <Login
                 isAuthenticated={isAuthenticated}
-                username={username}
+                user={user}
+                username={user?.name || user?.email}
                 onLogout={handleLogout}
               />
             ) : (
@@ -61,10 +77,11 @@ const Header = ({ title = "Location Scheduler" }) => {
         <div className="login-modal-overlay" onClick={toggleLoginModal}>
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
             <Login
-              onLogin={handleLogin}
+              onGoogleLogin={handleGoogleLogin}
               onClose={toggleLoginModal}
               isAuthenticated={isAuthenticated}
-              username={username}
+              user={user}
+              username={user?.name}
             />
           </div>
         </div>
