@@ -1,4 +1,21 @@
-# Getting Started with Create React App
+# Location Scheduler
+
+Location Scheduler is an application to help you organize and manage your production's Location Department's itineraries for scouts to technical surveys efficiently, all designed by a location manager and his dog.
+
+## Features
+
+### Authentication
+- **Login System**: Click the "Login" button in the header to access the login modal
+- **Demo Credentials**: Use any username with password "password" for testing
+- **Responsive Design**: Login interface works on desktop and mobile devices
+- **Session Management**: Stay logged in during your session with logout functionality
+
+### Components
+- **Header Component**: Integrated navigation bar with authentication
+- **Login Component**: Modal-based login form with error handling
+- **Responsive Layout**: Optimized for various screen sizes
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

@@ -22,7 +22,7 @@ const port = process.env.PORT || 8080;
 
 app.use(express.static(path.join(__dirname, 'build')));
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, 'build/static/index.html'));
 });
 
@@ -31,7 +31,7 @@ app.get('/api/hello', async (req, res) => {
   res.json({ message: 'Hello from the API', data: results });
 });
 
-app.delete('/api/hello', (req, res) => {
+app.delete('/api/hello', async (req, res) => {
   res.json({ message: 'DELETE request received' });
 });
 
