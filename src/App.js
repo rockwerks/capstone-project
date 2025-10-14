@@ -1,53 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
-import React from 'react';
-const express = require('express');
-const router = express.Router();  
-const mongoose = require('mongoose');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const passport = require('passport');
-const session = require('express-session');
-require('dotenv').config();
-const Itinerary = require('./models/itinerarySchema');
-const User = require('./models/userSchema');
-
-async function main() {
-  const app = express();
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  const client = await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-  console.log('MongoDB connected');
-  return client;
-}
-
-
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+import logo from "./logo.svg";
+import "./App.css";
+import React from "react";
 
 function App() {
+  const handleApiHello = async (message) => {
+    try {
+      const response = await fetch("/api/hello");
+      const data = await response.json();
+      console.log(data);
+      alert(data.message);
+    } catch (error) {
+      console.error("Error fetching API:", error);
+    }
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-      <div className="MyButton">
-        <form action="/api/hello" method="POST">
-          <button>Click Me!</button>
-        </form>
-      </div>
+      <header className="App-header"></header>
+      <main>
+        <div className="MyButton">
+          <button onClick={() => handleApiHello("Api Hello")}>Click Me!</button>
+        </div>
+      </main>
     </div>
   );
 }

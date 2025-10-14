@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const userSchema = require('./src/models/userSchema');
+const itinerarySchema = require('./src/models/itinerarySchema');
 
 
 const uri = process.env.MONGODB_URI;
