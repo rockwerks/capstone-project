@@ -1,14 +1,20 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const User = require('../src/models/userSchema');
 
-// Serialize user for the session
+// Serialize user for the session (save user ID to session)
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user._id);
 });
 
-// Deserialize user from the session
-passport.deserializeUser((user, done) => {
-  done(null, user);
+// Deserialize user from the session (retrieve full user from DB)
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 // Configure Google OAuth Strategy
@@ -22,21 +28,37 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Extract user information from Google profile
-        const user = {
+        // Check if user already exists in database
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (user) {
+          // User exists, update their information
+          user.name = profile.displayName;
+          user.firstName = profile.name.givenName;
+          user.lastName = profile.name.familyName;
+          user.profilePicture = profile.photos[0]?.value;
+          user.updatedAt = Date.now();
+          await user.save();
+          
+          console.log('Existing user logged in:', user.email);
+          return done(null, user);
+        }
+
+        // User doesn't exist, create new user
+        user = await User.create({
           googleId: profile.id,
           email: profile.emails[0].value,
           name: profile.displayName,
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           profilePicture: profile.photos[0]?.value,
-          accessToken: accessToken
-        };
+          authProvider: 'google'
+        });
 
-        // Here you can save the user to your database
-        // For now, we'll just return the user object
+        console.log('New user created:', user.email);
         return done(null, user);
       } catch (error) {
+        console.error('Error in Google Strategy:', error);
         return done(error, null);
       }
     }
