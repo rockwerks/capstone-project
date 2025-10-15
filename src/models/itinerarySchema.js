@@ -4,6 +4,16 @@ const itinerarySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   date: { type: Date, required: true },
+  startLocation: { 
+    name: { type: String },
+    address: { type: String },
+    time: { type: String }
+  },
+  endLocation: { 
+    name: { type: String },
+    address: { type: String },
+    time: { type: String }
+  },
   locations: [{
     setName: { type: String, required: true },
     address: { type: String, required: true },

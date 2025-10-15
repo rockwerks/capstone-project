@@ -176,6 +176,25 @@
   border-top: 1px solid #eee;
 }
 
+/* Special Location Sections (Start/End) */
+.special-location-section {
+  background: #f0f7ff;
+  border: 2px solid #478de9;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.special-location-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2563eb;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .locations-header {
   display: flex;
   justify-content: space-between;
@@ -201,6 +220,39 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+}
+
+.location-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drag-handle {
+  background: none;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: grab;
+  color: #666;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.drag-handle:hover {
+  border-color: #478de9;
+  color: #478de9;
+  background: #f0f7ff;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  background: #e1f0ff;
 }
 
 .location-form-header h5 {
@@ -251,6 +303,65 @@
   padding-bottom: 15px;
   border-bottom: 1px solid #eee;
 }
+
+/* Special Location Display (Start/End in cards) */
+.special-location {
+  background: #f8f9fa;
+  border-left: 4px solid #478de9;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.special-location.start-location {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+}
+
+.special-location.end-location {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.special-location-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.location-icon {
+  font-size: 18px;
+}
+
+.special-location strong {
+  color: #1f2937;
+  font-size: 15px;
+}
+
+.location-address {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 4px 0;
+  padding-left: 26px;
+}
+
+.location-time {
+  color: #478de9;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 4px 0;
+  padding-left: 26px;
+}
+
+.special-location.start-location .location-time {
+  color: #059669;
+}
+
+.special-location.end-location .location-time {
+  color: #dc2626;
+}
+
 
 .itinerary-locations h4 {
   font-size: 14px;

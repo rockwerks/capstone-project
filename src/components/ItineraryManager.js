@@ -1,5 +1,139 @@
 import React, { useState, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import './ItineraryManager.css';
+
+// Sortable Location Item Component
+const SortableLocationItem = ({ id, index, location, updateLocation, removeLocation }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="location-form">
+      <div className="location-form-header">
+        <div className="location-header-left">
+          <button
+            type="button"
+            className="drag-handle"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+          >
+            ⋮⋮
+          </button>
+          <h5>Location {index + 1}</h5>
+        </div>
+        <button 
+          type="button" 
+          onClick={() => removeLocation(index)}
+          className="btn-danger-small"
+        >
+          Remove
+        </button>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Set Name</label>
+          <input
+            type="text"
+            value={location.setName}
+            onChange={(e) => updateLocation(index, 'setName', e.target.value)}
+            placeholder="e.g., Coffee Shop Scene"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Address</label>
+          <input
+            type="text"
+            value={location.address}
+            onChange={(e) => updateLocation(index, 'address', e.target.value)}
+            placeholder="123 Main St, City, State"
+          />
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Start Time</label>
+          <input
+            type="time"
+            value={location.startTime}
+            onChange={(e) => updateLocation(index, 'startTime', e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>End Time</label>
+          <input
+            type="time"
+            value={location.endTime}
+            onChange={(e) => updateLocation(index, 'endTime', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Contact Name</label>
+          <input
+            type="text"
+            value={location.contactName}
+            onChange={(e) => updateLocation(index, 'contactName', e.target.value)}
+            placeholder="Contact person"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Contact Phone</label>
+          <input
+            type="tel"
+            value={location.contactPhone}
+            onChange={(e) => updateLocation(index, 'contactPhone', e.target.value)}
+            placeholder="555-1234"
+          />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Notes</label>
+        <textarea
+          value={location.notes}
+          onChange={(e) => updateLocation(index, 'notes', e.target.value)}
+          placeholder="Additional notes..."
+          rows="3"
+        />
+      </div>
+    </div>
+  );
+};
 
 const ItineraryManager = ({ user, isAuthenticated }) => {
   const [itineraries, setItineraries] = useState([]);
@@ -9,6 +143,16 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
+    startLocation: {
+      name: '',
+      address: '',
+      time: ''
+    },
+    endLocation: {
+      name: '',
+      address: '',
+      time: ''
+    },
     locations: []
   });
 
@@ -47,6 +191,26 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     }));
   };
 
+  const handleStartLocationChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      startLocation: {
+        ...prev.startLocation,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleEndLocationChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      endLocation: {
+        ...prev.endLocation,
+        [field]: value
+      }
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -64,7 +228,13 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
 
       if (data.success) {
         setItineraries([data.itinerary, ...itineraries]);
-        setFormData({ title: '', date: '', locations: [] });
+        setFormData({ 
+          title: '', 
+          date: '', 
+          startLocation: { name: '', address: '', time: '' },
+          endLocation: { name: '', address: '', time: '' },
+          locations: [] 
+        });
         setShowForm(false);
         setError('');
       } else {
@@ -132,6 +302,29 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     }));
   };
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for reordering locations
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = formData.locations.findIndex((_, index) => `location-${index}` === active.id);
+      const newIndex = formData.locations.findIndex((_, index) => `location-${index}` === over.id);
+
+      setFormData(prev => ({
+        ...prev,
+        locations: arrayMove(prev.locations, oldIndex, newIndex)
+      }));
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="itinerary-manager">
@@ -194,6 +387,72 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
               />
             </div>
 
+            {/* Start Location Section */}
+            <div className="special-location-section">
+              <h4>📍 Starting Location (Production Office)</h4>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Location Name</label>
+                  <input
+                    type="text"
+                    value={formData.startLocation.name}
+                    onChange={(e) => handleStartLocationChange('name', e.target.value)}
+                    placeholder="e.g., Production Office"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Address</label>
+                  <input
+                    type="text"
+                    value={formData.startLocation.address}
+                    onChange={(e) => handleStartLocationChange('address', e.target.value)}
+                    placeholder="123 Main St, City, State"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Departure Time</label>
+                <input
+                  type="time"
+                  value={formData.startLocation.time}
+                  onChange={(e) => handleStartLocationChange('time', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* End Location Section */}
+            <div className="special-location-section">
+              <h4>🏁 Ending Location</h4>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Location Name</label>
+                  <input
+                    type="text"
+                    value={formData.endLocation.name}
+                    onChange={(e) => handleEndLocationChange('name', e.target.value)}
+                    placeholder="e.g., Production Office, Hotel"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Address</label>
+                  <input
+                    type="text"
+                    value={formData.endLocation.address}
+                    onChange={(e) => handleEndLocationChange('address', e.target.value)}
+                    placeholder="123 Main St, City, State"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Expected Arrival Time</label>
+                <input
+                  type="time"
+                  value={formData.endLocation.time}
+                  onChange={(e) => handleEndLocationChange('time', e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="locations-section">
               <div className="locations-header">
                 <h4>Locations</h4>
@@ -202,94 +461,27 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                 </button>
               </div>
 
-              {formData.locations.map((location, index) => (
-                <div key={index} className="location-form">
-                  <div className="location-form-header">
-                    <h5>Location {index + 1}</h5>
-                    <button 
-                      type="button" 
-                      onClick={() => removeLocation(index)}
-                      className="btn-danger-small"
-                    >
-                      Remove
-                    </button>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Set Name</label>
-                      <input
-                        type="text"
-                        value={location.setName}
-                        onChange={(e) => updateLocation(index, 'setName', e.target.value)}
-                        placeholder="e.g., Coffee Shop Scene"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Address</label>
-                      <input
-                        type="text"
-                        value={location.address}
-                        onChange={(e) => updateLocation(index, 'address', e.target.value)}
-                        placeholder="123 Main St, City, State"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Start Time</label>
-                      <input
-                        type="time"
-                        value={location.startTime}
-                        onChange={(e) => updateLocation(index, 'startTime', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>End Time</label>
-                      <input
-                        type="time"
-                        value={location.endTime}
-                        onChange={(e) => updateLocation(index, 'endTime', e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Contact Name</label>
-                      <input
-                        type="text"
-                        value={location.contactName}
-                        onChange={(e) => updateLocation(index, 'contactName', e.target.value)}
-                        placeholder="Contact person"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Contact Phone</label>
-                      <input
-                        type="tel"
-                        value={location.contactPhone}
-                        onChange={(e) => updateLocation(index, 'contactPhone', e.target.value)}
-                        placeholder="555-1234"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Notes</label>
-                    <textarea
-                      value={location.notes}
-                      onChange={(e) => updateLocation(index, 'notes', e.target.value)}
-                      placeholder="Additional notes..."
-                      rows="3"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={formData.locations.map((_, index) => `location-${index}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {formData.locations.map((location, index) => (
+                    <SortableLocationItem
+                      key={`location-${index}`}
+                      id={`location-${index}`}
+                      index={index}
+                      location={location}
+                      updateLocation={updateLocation}
+                      removeLocation={removeLocation}
                     />
-                  </div>
-                </div>
-              ))}
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
 
             <div className="form-actions">
@@ -333,6 +525,21 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   day: 'numeric'
                 })}
               </p>
+
+              {/* Start Location */}
+              {itinerary.startLocation && itinerary.startLocation.name && (
+                <div className="special-location start-location">
+                  <div className="special-location-header">
+                    <span className="location-icon">📍</span>
+                    <strong>Start: {itinerary.startLocation.name}</strong>
+                  </div>
+                  <p className="location-address">{itinerary.startLocation.address}</p>
+                  {itinerary.startLocation.time && (
+                    <p className="location-time">Departure: {itinerary.startLocation.time}</p>
+                  )}
+                </div>
+              )}
+
               <div className="itinerary-locations">
                 <h4>{itinerary.locations.length} Location(s)</h4>
                 {itinerary.locations.map((location, index) => (
@@ -347,6 +554,20 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   </div>
                 ))}
               </div>
+
+              {/* End Location */}
+              {itinerary.endLocation && itinerary.endLocation.name && (
+                <div className="special-location end-location">
+                  <div className="special-location-header">
+                    <span className="location-icon">🏁</span>
+                    <strong>End: {itinerary.endLocation.name}</strong>
+                  </div>
+                  <p className="location-address">{itinerary.endLocation.address}</p>
+                  {itinerary.endLocation.time && (
+                    <p className="location-time">Expected Arrival: {itinerary.endLocation.time}</p>
+                  )}
+                </div>
+              )}
               <div className="itinerary-meta">
                 <small>
                   Created: {new Date(itinerary.createdAt).toLocaleDateString()}
