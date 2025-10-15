@@ -29,8 +29,8 @@ const Header = ({ title = "Location Scheduler" }) => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to Google OAuth
-    window.location.href = '/auth/google';
+    // Redirect to Google OAuth on backend server
+    window.location.href = 'http://localhost:8080/auth/google';
   };
 
   const handleLogout = async () => {
@@ -41,6 +41,8 @@ const Header = ({ title = "Location Scheduler" }) => {
       setIsAuthenticated(false);
       setUser(null);
       setShowLoginModal(false);
+      // Redirect to home after logout
+      window.location.href = '/';
     } catch (error) {
       console.error('Error logging out:', error);
     }

@@ -15,6 +15,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ShareModal from './ShareModal';
 import './ItineraryManager.css';
 
 // Sortable Location Item Component
@@ -75,7 +76,7 @@ const SortableLocationItem = ({ id, index, location, updateLocation, removeLocat
             type="text"
             value={location.address}
             onChange={(e) => updateLocation(index, 'address', e.target.value)}
-            placeholder="123 Main St, City, State"
+            placeholder="Location Name, 123 Main St, City, Province"
           />
         </div>
       </div>
@@ -140,6 +141,11 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] = useState(null);
+  const [travelTimes, setTravelTimes] = useState({});
+  const [calculatingTravel, setCalculatingTravel] = useState({});
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -215,8 +221,11 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     e.preventDefault();
     
     try {
-      const response = await fetch('/api/itineraries', {
-        method: 'POST',
+      const url = editingId ? `/api/itineraries/${editingId}` : '/api/itineraries';
+      const method = editingId ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -227,7 +236,17 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
       const data = await response.json();
 
       if (data.success) {
-        setItineraries([data.itinerary, ...itineraries]);
+        if (editingId) {
+          // Update existing itinerary in the list
+          setItineraries(itineraries.map(it => 
+            it._id === editingId ? data.itinerary : it
+          ));
+        } else {
+          // Add new itinerary to the list
+          setItineraries([data.itinerary, ...itineraries]);
+        }
+        
+        // Reset form
         setFormData({ 
           title: '', 
           date: '', 
@@ -236,12 +255,13 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
           locations: [] 
         });
         setShowForm(false);
+        setEditingId(null);
         setError('');
       } else {
-        setError('Failed to create itinerary');
+        setError(editingId ? 'Failed to update itinerary' : 'Failed to create itinerary');
       }
     } catch (err) {
-      setError('Error creating itinerary: ' + err.message);
+      setError(`Error ${editingId ? 'updating' : 'creating'} itinerary: ${err.message}`);
     }
   };
 
@@ -266,6 +286,37 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     } catch (err) {
       setError('Error deleting itinerary: ' + err.message);
     }
+  };
+
+  const handleEdit = (itinerary) => {
+    // Format the date for the input field (YYYY-MM-DD)
+    const formattedDate = new Date(itinerary.date).toISOString().split('T')[0];
+    
+    setFormData({
+      title: itinerary.title,
+      date: formattedDate,
+      startLocation: itinerary.startLocation || { name: '', address: '', time: '' },
+      endLocation: itinerary.endLocation || { name: '', address: '', time: '' },
+      locations: itinerary.locations || []
+    });
+    setEditingId(itinerary._id);
+    setShowForm(true);
+    
+    // Scroll to top of page to show form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setFormData({ 
+      title: '', 
+      date: '', 
+      startLocation: { name: '', address: '', time: '' },
+      endLocation: { name: '', address: '', time: '' },
+      locations: [] 
+    });
+    setShowForm(false);
+    setEditingId(null);
+    setError('');
   };
 
   const addLocation = () => {
@@ -300,6 +351,124 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
       ...prev,
       locations: prev.locations.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleShare = (itinerary) => {
+    setSelectedItinerary(itinerary);
+    setShareModalOpen(true);
+  };
+
+  const handleShareComplete = (data) => {
+    if (data.unshared) {
+      // Update itinerary in list to remove shared status
+      setItineraries(itineraries.map(it => 
+        it._id === selectedItinerary._id 
+          ? { ...it, isShared: false, shareToken: null }
+          : it
+      ));
+    } else {
+      // Update itinerary in list with shared status
+      setItineraries(itineraries.map(it => 
+        it._id === selectedItinerary._id 
+          ? { ...it, isShared: true, sharedWith: data.sharedWith }
+          : it
+      ));
+    }
+    // Refresh itineraries to get updated data
+    fetchItineraries();
+  };
+
+  const handleCalculateTravel = async (itinerary) => {
+    setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: true }));
+
+    try {
+      // Build list of all locations in order
+      const allLocations = [];
+      
+      // Add start location if exists
+      if (itinerary.startLocation && itinerary.startLocation.address) {
+        allLocations.push({
+          name: itinerary.startLocation.name || 'Start Location',
+          address: itinerary.startLocation.address
+        });
+      }
+
+      // Add all main locations
+      itinerary.locations.forEach(loc => {
+        allLocations.push({
+          name: loc.setName,
+          address: loc.address
+        });
+      });
+
+      // Add end location if exists
+      if (itinerary.endLocation && itinerary.endLocation.address) {
+        allLocations.push({
+          name: itinerary.endLocation.name || 'End Location',
+          address: itinerary.endLocation.address
+        });
+      }
+
+      if (allLocations.length < 2) {
+        alert('Need at least 2 locations with addresses to calculate travel times');
+        setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: false }));
+        return;
+      }
+
+      // Calculate travel times between consecutive locations
+      const times = [];
+
+      for (let i = 0; i < allLocations.length - 1; i++) {
+        const origin = allLocations[i].address;
+        const destination = allLocations[i + 1].address;
+
+        const response = await fetch('/api/calculate-travel-times', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            origins: [origin],
+            destinations: [destination],
+            mode: 'driving'
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const element = data.data.rows[0].elements[0];
+          
+          if (element.status === 'OK') {
+            times.push({
+              from: allLocations[i].name,
+              to: allLocations[i + 1].name,
+              duration: element.duration.text,
+              distance: element.distance.text,
+              durationSeconds: element.duration.value,
+              distanceMeters: element.distance.value
+            });
+          } else {
+            times.push({
+              from: allLocations[i].name,
+              to: allLocations[i + 1].name,
+              error: `Unable to calculate`
+            });
+          }
+        }
+      }
+
+      setTravelTimes(prev => ({
+        ...prev,
+        [itinerary._id]: times
+      }));
+
+    } catch (err) {
+      alert('Error calculating travel times: ' + err.message);
+    } finally {
+      setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: false }));
+    }
   };
 
   // Drag and drop sensors
@@ -345,12 +514,14 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     <div className="itinerary-manager">
       <div className="itinerary-header">
         <h2>My Itineraries</h2>
-        <button 
-          className="btn-primary" 
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? 'Cancel' : '+ New Itinerary'}
-        </button>
+        {!editingId && (
+          <button 
+            className="btn-primary" 
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? 'Cancel' : '+ New Itinerary'}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -362,7 +533,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
 
       {showForm && (
         <div className="itinerary-form">
-          <h3>Create New Itinerary</h3>
+          <h3>{editingId ? '✏️ Edit Itinerary' : 'Create New Itinerary'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Title *</label>
@@ -486,11 +657,11 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
 
             <div className="form-actions">
               <button type="submit" className="btn-primary">
-                Create Itinerary
+                {editingId ? 'Update Itinerary' : 'Create Itinerary'}
               </button>
               <button 
                 type="button" 
-                onClick={() => setShowForm(false)}
+                onClick={handleCancelEdit}
                 className="btn-secondary"
               >
                 Cancel
@@ -510,12 +681,27 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
             <div key={itinerary._id} className="itinerary-card">
               <div className="itinerary-card-header">
                 <h3>{itinerary.title}</h3>
-                <button 
-                  className="btn-danger"
-                  onClick={() => handleDelete(itinerary._id)}
-                >
-                  Delete
-                </button>
+                <div className="card-actions">
+                  <button 
+                    className="btn-share"
+                    onClick={() => handleShare(itinerary)}
+                    title="Share via email"
+                  >
+                    {itinerary.isShared ? '📧 Shared' : '📤 Share'}
+                  </button>
+                  <button 
+                    className="btn-edit"
+                    onClick={() => handleEdit(itinerary)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="btn-danger"
+                    onClick={() => handleDelete(itinerary._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
               <p className="itinerary-date">
                 {new Date(itinerary.date).toLocaleDateString('en-US', {
@@ -568,6 +754,63 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   )}
                 </div>
               )}
+              
+              {/* Travel Times Section */}
+              <div className="travel-times-section">
+                {!travelTimes[itinerary._id] ? (
+                  <button 
+                    className="btn-travel-calc"
+                    onClick={() => handleCalculateTravel(itinerary)}
+                    disabled={calculatingTravel[itinerary._id]}
+                    title="Calculate driving times and distances"
+                  >
+                    {calculatingTravel[itinerary._id] ? '⏳ Calculating...' : '🚗 Calculate Driving Times'}
+                  </button>
+                ) : (
+                  <div className="travel-times-display">
+                    <div className="travel-times-header">
+                      <h4>🚗 Driving Times & Distances</h4>
+                      <button 
+                        className="btn-recalc"
+                        onClick={() => handleCalculateTravel(itinerary)}
+                        disabled={calculatingTravel[itinerary._id]}
+                        title="Recalculate"
+                      >
+                        🔄
+                      </button>
+                    </div>
+                    <div className="travel-segments">
+                      {travelTimes[itinerary._id].map((segment, index) => (
+                        <div key={index} className="travel-segment">
+                          {segment.error ? (
+                            <>
+                              <div className="segment-route">
+                                <span className="location-from">{segment.from}</span>
+                                <span className="arrow">→</span>
+                                <span className="location-to">{segment.to}</span>
+                              </div>
+                              <div className="segment-error">{segment.error}</div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="segment-route">
+                                <span className="location-from">{segment.from}</span>
+                                <span className="arrow">→</span>
+                                <span className="location-to">{segment.to}</span>
+                              </div>
+                              <div className="segment-info">
+                                <span className="duration">⏱️ {segment.duration}</span>
+                                <span className="distance">📏 {segment.distance}</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="itinerary-meta">
                 <small>
                   Created: {new Date(itinerary.createdAt).toLocaleDateString()}
@@ -577,6 +820,18 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
           ))
         )}
       </div>
+
+      {/* Share Modal */}
+      {shareModalOpen && selectedItinerary && (
+        <ShareModal 
+          itinerary={selectedItinerary}
+          onClose={() => {
+            setShareModalOpen(false);
+            setSelectedItinerary(null);
+          }}
+          onShare={handleShareComplete}
+        />
+      )}
     </div>
   );
 };

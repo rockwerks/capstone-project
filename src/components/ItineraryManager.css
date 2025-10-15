@@ -49,6 +49,38 @@
   background: #5a6268;
 }
 
+.btn-edit {
+  background: #fbbf24;
+  color: #1f2937;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background: #f59e0b;
+}
+
+.btn-share {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-share:hover {
+  background: #059669;
+}
+
 .btn-danger {
   background: #dc3545;
   color: white;
@@ -296,6 +328,12 @@
   padding-right: 10px;
 }
 
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .itinerary-date {
   color: #666;
   font-size: 14px;
@@ -393,6 +431,138 @@
 .time-range {
   color: #478de9 !important;
   font-weight: 500;
+}
+
+.itinerary-actions {
+  margin: 20px 0;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+}
+
+.btn-travel-calc {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-travel-calc:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-travel-calc:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Travel Times Section */
+.travel-times-section {
+  margin: 20px 0;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+}
+
+.travel-times-display {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.travel-times-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.travel-times-header h4 {
+  margin: 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.btn-recalc {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-recalc:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.btn-recalc:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.travel-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.travel-segment {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.segment-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.location-from,
+.location-to {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.arrow {
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+.segment-info {
+  display: flex;
+  gap: 16px;
+  padding-left: 4px;
+}
+
+.duration,
+.distance {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.segment-error {
+  color: #dc2626;
+  font-size: 13px;
+  font-style: italic;
+  padding-left: 4px;
 }
 
 .itinerary-meta {

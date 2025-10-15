@@ -24,6 +24,10 @@ const itinerarySchema = new mongoose.Schema({
     notes: { type: String },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   }],
+  shareToken: { type: String, unique: true, sparse: true },
+  sharePassword: { type: String },
+  isShared: { type: Boolean, default: false },
+  sharedWith: [{ type: String }], // Array of email addresses
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
