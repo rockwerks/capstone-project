@@ -414,6 +414,98 @@
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.location-item.status-completed {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+}
+
+.location-item.status-skipped {
+  background: #f8d7da;
+  border-left: 4px solid #dc3545;
+  opacity: 0.7;
+}
+
+.location-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.location-main-info {
+  flex: 1;
+}
+
+.location-status-controls {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.status-btn {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.status-btn:hover {
+  background: #f8f9fa;
+  border-color: #bbb;
+}
+
+.status-btn.active {
+  font-weight: bold;
+}
+
+.status-btn.active:first-child {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.status-btn.active:nth-child(2) {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.status-btn.reset {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #333;
+}
+
+.status-btn.reset:hover {
+  background: #ffb300;
+  border-color: #ffb300;
+}
+
+.status-badge {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.completed {
+  background: #28a745;
+  color: white;
+}
+
+.status-badge.skipped {
+  background: #dc3545;
+  color: white;
 }
 
 .location-item strong {

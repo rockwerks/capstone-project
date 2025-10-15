@@ -22,6 +22,7 @@ const itinerarySchema = new mongoose.Schema({
     contactName: { type: String },
     contactPhone: { type: String },
     notes: { type: String },
+    status: { type: String, enum: ['pending', 'completed', 'skipped'], default: 'pending' },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   }],
   shareToken: { type: String, unique: true, sparse: true },

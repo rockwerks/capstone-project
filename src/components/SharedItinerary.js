@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './SharedItinerary.css';
 
+// Helper function to format time from 24-hour to 12-hour with AM/PM
+const formatTime = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 const SharedItinerary = () => {
   const { token } = useParams();
   const [password, setPassword] = useState('');
@@ -210,7 +220,7 @@ const SharedItinerary = () => {
                   <p className="location-address">📮 {itinerary.startLocation.address}</p>
                 )}
                 {itinerary.startLocation.time && (
-                  <p className="location-time">⏰ Departure: {itinerary.startLocation.time}</p>
+                  <p className="location-time">⏰ Departure: {formatTime(itinerary.startLocation.time)}</p>
                 )}
               </div>
             </div>
@@ -250,7 +260,7 @@ const SharedItinerary = () => {
                       
                       {(location.startTime || location.endTime) && (
                         <p className="time-range">
-                          ⏰ {location.startTime} - {location.endTime}
+                          ⏰ {formatTime(location.startTime)} - {formatTime(location.endTime)}
                         </p>
                       )}
 
@@ -312,7 +322,7 @@ const SharedItinerary = () => {
                   <p className="location-address">📮 {itinerary.endLocation.address}</p>
                 )}
                 {itinerary.endLocation.time && (
-                  <p className="location-time">⏰ Expected Arrival: {itinerary.endLocation.time}</p>
+                  <p className="location-time">⏰ Expected Arrival: {formatTime(itinerary.endLocation.time)}</p>
                 )}
               </div>
             </div>

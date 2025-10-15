@@ -18,6 +18,16 @@ import { CSS } from '@dnd-kit/utilities';
 import ShareModal from './ShareModal';
 import './ItineraryManager.css';
 
+// Helper function to format time from 24-hour to 12-hour with AM/PM
+const formatTime = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 // Sortable Location Item Component
 const SortableLocationItem = ({ id, index, location, updateLocation, removeLocation }) => {
   const {
@@ -331,7 +341,8 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
           endTime: '',
           contactName: '',
           contactPhone: '',
-          notes: ''
+          notes: '',
+          status: 'pending'
         }
       ]
     }));
@@ -468,6 +479,47 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
       alert('Error calculating travel times: ' + err.message);
     } finally {
       setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: false }));
+    }
+  };
+
+  const handleLocationStatus = async (itineraryId, locationIndex, newStatus) => {
+    try {
+      // Find the itinerary
+      const itinerary = itineraries.find(it => it._id === itineraryId);
+      if (!itinerary) return;
+
+      // Update the location status
+      const updatedLocations = [...itinerary.locations];
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        status: newStatus
+      };
+
+      // Send update to server
+      const response = await fetch(`/api/itineraries/${itineraryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...itinerary,
+          locations: updatedLocations
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update local state
+        setItineraries(itineraries.map(it => 
+          it._id === itineraryId ? data.itinerary : it
+        ));
+      } else {
+        setError('Failed to update location status');
+      }
+    } catch (err) {
+      setError('Error updating location status: ' + err.message);
     }
   };
 
@@ -721,7 +773,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   </div>
                   <p className="location-address">{itinerary.startLocation.address}</p>
                   {itinerary.startLocation.time && (
-                    <p className="location-time">Departure: {itinerary.startLocation.time}</p>
+                    <p className="location-time">Departure: {formatTime(itinerary.startLocation.time)}</p>
                   )}
                 </div>
               )}
@@ -729,13 +781,47 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
               <div className="itinerary-locations">
                 <h4>{itinerary.locations.length} Location(s)</h4>
                 {itinerary.locations.map((location, index) => (
-                  <div key={index} className="location-item">
-                    <strong>{location.setName}</strong>
-                    <p>{location.address}</p>
-                    {location.startTime && (
-                      <p className="time-range">
-                        {location.startTime} - {location.endTime}
-                      </p>
+                  <div key={index} className={`location-item status-${location.status || 'pending'}`}>
+                    <div className="location-item-header">
+                      <div className="location-main-info">
+                        <strong>{location.setName}</strong>
+                        <p>{location.address}</p>
+                        {location.startTime && (
+                          <p className="time-range">
+                            {formatTime(location.startTime)} - {formatTime(location.endTime)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="location-status-controls">
+                        <button
+                          className={`status-btn ${location.status === 'completed' ? 'active' : ''}`}
+                          onClick={() => handleLocationStatus(itinerary._id, index, 'completed')}
+                          title="Mark as completed"
+                        >
+                          ✓ Complete
+                        </button>
+                        <button
+                          className={`status-btn ${location.status === 'skipped' ? 'active' : ''}`}
+                          onClick={() => handleLocationStatus(itinerary._id, index, 'skipped')}
+                          title="Mark as skipped"
+                        >
+                          ⊘ Skip
+                        </button>
+                        {location.status !== 'pending' && (
+                          <button
+                            className="status-btn reset"
+                            onClick={() => handleLocationStatus(itinerary._id, index, 'pending')}
+                            title="Reset to pending"
+                          >
+                            ↺ Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {location.status && location.status !== 'pending' && (
+                      <div className={`status-badge ${location.status}`}>
+                        {location.status === 'completed' ? '✓ Completed' : '⊘ Skipped'}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -750,7 +836,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   </div>
                   <p className="location-address">{itinerary.endLocation.address}</p>
                   {itinerary.endLocation.time && (
-                    <p className="location-time">Expected Arrival: {itinerary.endLocation.time}</p>
+                    <p className="location-time">Expected Arrival: {formatTime(itinerary.endLocation.time)}</p>
                   )}
                 </div>
               )}
