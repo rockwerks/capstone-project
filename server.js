@@ -506,31 +506,57 @@ app.post("/api/itineraries/:id/unshare", isAuthenticated, async (req, res) => {
 // ==================== TRAVEL TIME CALCULATION ====================
 
 // Helper function to geocode address using free Nominatim API
+// Note: Nominatim has rate limiting of 1 request per second
 async function geocodeAddress(address) {
   try {
+    console.log(`📍 Geocoding address: "${address}"`);
+    
+    // Clean up the address - remove extra spaces, newlines
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
+    
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        address
-      )}&limit=1`,
+        cleanAddress
+      )}&limit=1&addressdetails=1`,
       {
         headers: {
           "User-Agent": "LocationSchedulerApp/1.0",
         },
       }
     );
+
+    if (!response.ok) {
+      console.error(`Geocoding API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
     const data = await response.json();
+    
+    console.log(`   API returned ${data.length} result(s)`);
 
     if (data && data.length > 0) {
+      const result = data[0];
+      console.log(`✓ Found: ${result.display_name}`);
+      console.log(`  Coordinates: ${result.lat}, ${result.lon}`);
       return {
-        lat: parseFloat(data[0].lat),
-        lon: parseFloat(data[0].lon),
+        lat: parseFloat(result.lat),
+        lon: parseFloat(result.lon),
+        display_name: result.display_name
       };
     }
+    
+    console.error(`❌ No results found for address: "${cleanAddress}"`);
+    console.log('   Tip: Try using a more specific address (include city, state, country)');
     return null;
   } catch (error) {
-    console.error("Geocoding error:", error);
+    console.error("Geocoding error:", error.message);
     return null;
   }
+}
+
+// Helper to add delay between API calls (for rate limiting)
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Calculate distance between two coordinates using Haversine formula
@@ -575,27 +601,67 @@ app.post("/api/calculate-travel-times", isAuthenticated, async (req, res) => {
   try {
     const { origins, destinations } = req.body;
 
+    console.log('📥 Travel time request received');
+    console.log('   Origins:', origins);
+    console.log('   Destinations:', destinations);
+
     if (
       !origins ||
       !destinations ||
       !Array.isArray(origins) ||
       !Array.isArray(destinations)
     ) {
-      return res.status(400).json({ error: "Invalid origins or destinations" });
+      console.error('❌ Invalid request format');
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid origins or destinations" 
+      });
+    }
+
+    if (origins.length === 0 || destinations.length === 0) {
+      console.error('❌ Empty origins or destinations');
+      return res.status(400).json({ 
+        success: false,
+        error: "Origins and destinations cannot be empty" 
+      });
     }
 
     // For simplicity, we expect one origin and one destination per request
     const origin = origins[0];
     const destination = destinations[0];
 
-    // Geocode both addresses
+    if (!origin || !destination || origin.trim() === '' || destination.trim() === '') {
+      console.error('❌ Empty address strings');
+      return res.status(400).json({ 
+        success: false,
+        error: "Origin and destination addresses cannot be empty" 
+      });
+    }
+
+    console.log(`🚗 Calculating travel time: ${origin} → ${destination}`);
+
+    // Add delay to respect Nominatim rate limit (1 request per second)
+    // This is handled by waiting between geocoding calls
     const originCoords = await geocodeAddress(origin);
+    
+    if (!originCoords) {
+      console.error(`❌ Failed to geocode origin: "${origin}"`);
+      return res.status(400).json({
+        success: false,
+        error: `Could not find location: "${origin}". Please use a more complete address (e.g., "123 Main St, City, State, Country").`,
+      });
+    }
+
+    // Wait 1 second between geocoding requests (Nominatim rate limit)
+    await delay(1100);
+    
     const destCoords = await geocodeAddress(destination);
 
-    if (!originCoords || !destCoords) {
+    if (!destCoords) {
+      console.error(`❌ Failed to geocode destination: "${destination}"`);
       return res.status(400).json({
-        error:
-          "Could not geocode one or more addresses. Please check the addresses are valid.",
+        success: false,
+        error: `Could not find location: "${destination}". Please use a more complete address (e.g., "123 Main St, City, State, Country").`,
       });
     }
 
@@ -612,6 +678,8 @@ app.post("/api/calculate-travel-times", isAuthenticated, async (req, res) => {
 
     // Estimate driving time
     const durationMinutes = estimateDrivingTime(roadDistanceKm);
+
+    console.log(`✓ Calculated: ${formatDuration(durationMinutes)}, ${roadDistanceKm.toFixed(1)} km`);
 
     // Format response to match expected structure
     const mockResponse = {
@@ -640,10 +708,13 @@ app.post("/api/calculate-travel-times", isAuthenticated, async (req, res) => {
       data: mockResponse,
     });
   } catch (error) {
-    console.error("Error calculating travel times:", error);
+    console.error("❌ Error calculating travel times:", error);
     res
       .status(500)
-      .json({ error: "Failed to calculate travel times: " + error.message });
+      .json({ 
+        success: false,
+        error: "Failed to calculate travel times: " + error.message 
+      });
   }
 });
 

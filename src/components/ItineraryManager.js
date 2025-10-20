@@ -154,8 +154,6 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
   const [editingId, setEditingId] = useState(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState(null);
-  const [travelTimes, setTravelTimes] = useState({});
-  const [calculatingTravel, setCalculatingTravel] = useState({});
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -389,102 +387,8 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
     fetchItineraries();
   };
 
-  const handleCalculateTravel = async (itinerary) => {
-    setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: true }));
-
-    try {
-      // Build list of all locations in order
-      const allLocations = [];
-      
-      // Add start location if exists
-      if (itinerary.startLocation && itinerary.startLocation.address) {
-        allLocations.push({
-          name: itinerary.startLocation.name || 'Start Location',
-          address: itinerary.startLocation.address
-        });
-      }
-
-      // Add all main locations
-      itinerary.locations.forEach(loc => {
-        allLocations.push({
-          name: loc.setName,
-          address: loc.address
-        });
-      });
-
-      // Add end location if exists
-      if (itinerary.endLocation && itinerary.endLocation.address) {
-        allLocations.push({
-          name: itinerary.endLocation.name || 'End Location',
-          address: itinerary.endLocation.address
-        });
-      }
-
-      if (allLocations.length < 2) {
-        alert('Need at least 2 locations with addresses to calculate travel times');
-        setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: false }));
-        return;
-      }
-
-      // Calculate travel times between consecutive locations
-      const times = [];
-
-      for (let i = 0; i < allLocations.length - 1; i++) {
-        const origin = allLocations[i].address;
-        const destination = allLocations[i + 1].address;
-
-        const response = await fetch('/api/calculate-travel-times', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            origins: [origin],
-            destinations: [destination],
-            mode: 'driving'
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          const element = data.data.rows[0].elements[0];
-          
-          if (element.status === 'OK') {
-            times.push({
-              from: allLocations[i].name,
-              to: allLocations[i + 1].name,
-              duration: element.duration.text,
-              distance: element.distance.text,
-              durationSeconds: element.duration.value,
-              distanceMeters: element.distance.value
-            });
-          } else {
-            times.push({
-              from: allLocations[i].name,
-              to: allLocations[i + 1].name,
-              error: `Unable to calculate`
-            });
-          }
-        }
-      }
-
-      setTravelTimes(prev => ({
-        ...prev,
-        [itinerary._id]: times
-      }));
-
-    } catch (err) {
-      alert('Error calculating travel times: ' + err.message);
-    } finally {
-      setCalculatingTravel(prev => ({ ...prev, [itinerary._id]: false }));
-    }
-  };
-
   const handleLocationStatus = async (itineraryId, locationIndex, newStatus) => {
     try {
-      // Find the itinerary
       const itinerary = itineraries.find(it => it._id === itineraryId);
       if (!itinerary) return;
 
@@ -840,62 +744,6 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
                   )}
                 </div>
               )}
-              
-              {/* Travel Times Section */}
-              <div className="travel-times-section">
-                {!travelTimes[itinerary._id] ? (
-                  <button 
-                    className="btn-travel-calc"
-                    onClick={() => handleCalculateTravel(itinerary)}
-                    disabled={calculatingTravel[itinerary._id]}
-                    title="Calculate driving times and distances"
-                  >
-                    {calculatingTravel[itinerary._id] ? '⏳ Calculating...' : '🚗 Calculate Driving Times'}
-                  </button>
-                ) : (
-                  <div className="travel-times-display">
-                    <div className="travel-times-header">
-                      <h4>🚗 Driving Times & Distances</h4>
-                      <button 
-                        className="btn-recalc"
-                        onClick={() => handleCalculateTravel(itinerary)}
-                        disabled={calculatingTravel[itinerary._id]}
-                        title="Recalculate"
-                      >
-                        🔄
-                      </button>
-                    </div>
-                    <div className="travel-segments">
-                      {travelTimes[itinerary._id].map((segment, index) => (
-                        <div key={index} className="travel-segment">
-                          {segment.error ? (
-                            <>
-                              <div className="segment-route">
-                                <span className="location-from">{segment.from}</span>
-                                <span className="arrow">→</span>
-                                <span className="location-to">{segment.to}</span>
-                              </div>
-                              <div className="segment-error">{segment.error}</div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="segment-route">
-                                <span className="location-from">{segment.from}</span>
-                                <span className="arrow">→</span>
-                                <span className="location-to">{segment.to}</span>
-                              </div>
-                              <div className="segment-info">
-                                <span className="duration">⏱️ {segment.duration}</span>
-                                <span className="distance">📏 {segment.distance}</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
 
               <div className="itinerary-meta">
                 <small>
