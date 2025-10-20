@@ -34,7 +34,7 @@ const Header = ({ title = "Location Scheduler" }) => {
     // In development with proxy, it goes to the backend
     const isProduction = window.location.hostname !== 'localhost';
     const authUrl = isProduction 
-      ? '/auth/google'  // Production: same origin
+      ? 'http://locationscheduler.onrender.com:8080/auth/google'  // Production: same origin
       : 'http://localhost:8080/auth/google';  // Development: explicit backend URL
     window.location.href = authUrl;
   };
