@@ -7,6 +7,7 @@ const Login = ({ onGoogleLogin, onClose, isAuthenticated, onLogout, username, us
   };
 
   const handleGoogleLogin = () => {
+    console.log("Initiating Google login...", onGoogleLogin);
     if (onGoogleLogin) {
       onGoogleLogin();
     }
