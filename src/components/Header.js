@@ -29,8 +29,14 @@ const Header = ({ title = "Location Scheduler" }) => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to Google OAuth on backend server
-    window.location.href = 'http://localhost:8080/auth/google';
+    // Redirect to Google OAuth (works in both dev and production)
+    // In production, this uses the proxy or same origin
+    // In development with proxy, it goes to the backend
+    const isProduction = window.location.hostname !== 'localhost';
+    const authUrl = isProduction 
+      ? '/auth/google'  // Production: same origin
+      : 'http://localhost:8080/auth/google';  // Development: explicit backend URL
+    window.location.href = authUrl;
   };
 
   const handleLogout = async () => {
