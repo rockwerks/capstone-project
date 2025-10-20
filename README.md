@@ -1,265 +1,286 @@
-# Location Scheduler
+# 📍 Location Scheduler
 
-Location Scheduler is an application to help you organize and manage your production's Location Department's itineraries for scouts to technical surveys efficiently, all designed by a location manager and his dog.
+A comprehensive web application designed for film production location departments to organize, manage, and share location itineraries efficiently. Built by a location manager to streamline the coordination of scouts, technical surveys, and location logistics.
 
-## Features
+![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
 
-### Authentication
-- **Google OAuth Login**: Secure authentication using Google accounts via Passport.js
-- **Traditional Login**: Email/password login option (demo mode available)
-- **Session Management**: Persistent sessions with automatic authentication status checks
-- **Profile Display**: Shows user's Google profile picture and name when logged in
-- **Responsive Design**: Login interface works seamlessly on desktop and mobile devices
+## 🎬 Overview
 
-### Components
-- **Header Component**: Integrated navigation bar with authentication UI
-- **Login Component**: Modal-based login with Google OAuth and traditional options
-- **Responsive Layout**: Optimized for various screen sizes
+Location Scheduler helps film production teams manage complex multi-location shoots by providing:
+- **Drag-and-drop itinerary creation** with flexible location ordering
+- **Real-time status tracking** (completed, skipped, pending)  
+- **Automatic travel time calculations** between locations
+- **Secure email sharing** with password protection
+- **Production office integration** with start/end locations
+- **Mobile-responsive design** for on-set access
 
-## 🚀 Quick Start
+## ✨ Key Features
+
+### 📋 Itinerary Management
+- Create, edit, and delete location itineraries
+- Add unlimited locations per itinerary
+- Drag and drop to reorder locations
+- Set names, addresses, times, contacts, and notes
+- Define production office as starting/ending locations
+- Add new locations while editing existing itineraries
+
+### ✅ Status Tracking
+- Mark locations as **completed** (green indicator)
+- Mark locations as **skipped** (red indicator)
+- Reset to **pending** at any time
+- Visual progress indicators with statistics
+- Progress bar showing completion percentage
+- Status persists across edits and shares
+
+### 🚗 Travel Time Calculator
+- Automatic driving time and distance calculations
+- Uses free OpenStreetMap + Haversine formula
+- Calculates routes between consecutive locations
+- Displays in kilometers (metric system)
+- One-click recalculation
+
+### 📧 Secure Sharing
+- Share itineraries via email
+- Password-protected shared links
+- Built-in password generator with strength indicator
+- Beautiful, print-friendly shared view
+- Recipients see real-time status updates
+
+### 🔐 Authentication
+- Google OAuth 2.0 integration
+- Secure session management
+- User-specific itinerary storage
+
+### ⏰ Time Display
+- 12-hour format with AM/PM
+- Clear time ranges for each location
+
+## 🛠 Technology Stack
+
+**Frontend:** React 19.2.0, React Router 7.9.4, @dnd-kit, CSS3
+
+**Backend:** Node.js, Express 5.1.0, Passport.js 0.7.0, Mongoose 8.19.1
+
+**Database:** MongoDB Atlas
+
+**Services:** Google OAuth 2.0, Gmail SMTP, OpenStreetMap Nominatim API
+
+**Security:** bcrypt 6.0.0, express-session, secure cookies
+
+## 📦 Installation
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- MongoDB database
-- Google OAuth credentials (see setup guide below)
+- Node.js (v14+)
+- MongoDB Atlas account
+- Google OAuth credentials
+- Gmail with App Password
 
-### Installation
+### Setup
 
-1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
+# Clone repository
+git clone https://github.com/rockwerks/capstone-project.git
 cd capstone-project
-```
 
-2. **Install dependencies**
-```bash
+# Install dependencies
 npm install
-```
 
-3. **Set up environment variables**
-```bash
+# Create environment file
 cp .env.example .env
-```
 
-Then update `.env` with your credentials:
-- MongoDB URI
-- Google OAuth Client ID and Secret
-- Session Secret
+# Configure .env with your credentials
 
-**For detailed Google OAuth setup instructions, see [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)**
+# Build React app
+npm run build
 
-4. **Start the application**
-
-Option A - Using the start script (macOS):
-```bash
-./start.sh
-```
-
-Option B - Manual start:
-```bash
-# Terminal 1 - Backend
+# Start servers (development)
+# Terminal 1:
 npm run start:server
 
-# Terminal 2 - Frontend
-npm start
+# Terminal 2:
+PORT=3001 npm start
 ```
 
-5. **Access the application**
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8080
+Access at: http://localhost:3001
 
-## 🔐 Google OAuth Setup
+## ⚙️ Configuration
 
-To enable Google login:
+Create `.env` file:
 
-1. Visit [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
-6. Copy Client ID and Client Secret to `.env`
+```env
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:8080/auth/google/callback
+SESSION_SECRET=change-this-in-production
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=gmail-app-password
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+CLIENT_URL=http://localhost:3001
+PORT=8080
+NODE_ENV=development
+```
 
-**Full instructions: [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)**
+## 🚀 Usage
 
-## 📚 Documentation
+### Creating an Itinerary
+1. Log in with Google
+2. Click "+ New Itinerary"
+3. Fill in title and date
+4. Add starting location (production office)
+5. Click "+ Add Location" for each filming spot
+6. Drag ⋮⋮ handle to reorder
+7. Add ending location
+8. Click "Create Itinerary"
 
-- **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Complete Google OAuth setup guide
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+### Tracking Progress
+- Click **✓ Complete** when filming is done
+- Click **⊘ Skip** if location can't be visited
+- Click **↺ Reset** to clear status
 
-## API Endpoints
+### Calculating Travel Times
+1. Click "🚗 Calculate Driving Times"
+2. View time/distance between locations
+3. Click 🔄 to recalculate
+
+### Sharing
+1. Click "📤 Share"
+2. Enter email addresses (comma-separated)
+3. Generate or enter password
+4. Click "Share Itinerary"
+5. Recipients get secure link via email
+
+## 📊 Database Schema
+
+### User
+```javascript
+{
+  googleId: String,
+  name: String,
+  email: String,
+  createdAt: Date
+}
+```
+
+### Itinerary
+```javascript
+{
+  userId: ObjectId,
+  title: String,
+  date: Date,
+  startLocation: { name, address, time },
+  locations: [{
+    setName, address,
+    startTime, endTime,
+    contactName, contactPhone,
+    notes,
+    status: 'pending'|'completed'|'skipped'
+  }],
+  endLocation: { name, address, time },
+  shareToken: String,
+  sharePassword: String,
+  isShared: Boolean,
+  sharedWith: [String],
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+## 🔌 API Endpoints
 
 ### Authentication
-- `GET /auth/google` - Initiate Google OAuth flow
-- `GET /auth/google/callback` - OAuth callback handler
-- `GET /api/auth/user` - Get current authenticated user
-- `GET /api/auth/logout` - Logout current user
+- `GET /auth/google` - Initiate OAuth
+- `GET /auth/google/callback` - OAuth callback
+- `GET /api/auth/user` - Get current user
+- `POST /api/auth/logout` - Log out
 
-### Data
-- `GET /api/hello` - Test endpoint with sample data
+### Itineraries
+- `GET /api/itineraries` - List user's itineraries
+- `POST /api/itineraries` - Create itinerary
+- `PUT /api/itineraries/:id` - Update itinerary
+- `DELETE /api/itineraries/:id` - Delete itinerary
 
-## Technology Stack
+### Sharing
+- `POST /api/itineraries/:id/share` - Share via email
+- `POST /api/itineraries/:id/unshare` - Unshare
+- `POST /api/shared/:token` - Access shared (public)
 
-### Frontend
-- React 19.2.0
-- React Router
-- Custom authentication components
+### Utility
+- `POST /api/calculate-travel-times` - Calculate routes
 
-### Backend
-- Express 5.1.0
-- Passport.js 0.7.0
-- Passport Google OAuth 2.0
-- Express Session
-- MongoDB 6.20.0
-- Mongoose 8.19.1
+## 🚢 Deployment
 
-## Development
+See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for complete deployment instructions to Render.com.
 
-### Project Structure
-```
-capstone-project/
-├── config/
-│   └── passport.js          # Passport Google OAuth configuration
-├── src/
-│   ├── components/
-│   │   ├── Header.js        # Header with auth UI
-│   │   ├── Header.css
-│   │   ├── Login.js         # Login modal component
-│   │   └── Login.css
-│   ├── models/
-│   │   ├── userSchema.js
-│   │   └── itinerarySchema.js
-│   ├── App.js
-│   └── index.js
-├── server.js                # Express server with Passport
-├── .env                     # Environment variables (not in git)
-├── .env.example             # Template for .env
-└── package.json
+## 🧪 Testing
+
+```bash
+npm test
+npm test -- --coverage
 ```
 
-### Available Scripts
+## 🤝 Contributing
 
-#### `npm start`
-Runs the React app in development mode at http://localhost:3000
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-#### `npm run start:server`
-Runs the Express backend server at http://localhost:8080
+## 📝 License
 
-#### `npm run build`
-Builds the React app for production
+MIT License
 
-#### `npm test`
-Launches the test runner
+## 👤 Author
 
-## Security Notes
+**Anthony Wittrock**
+- GitHub: [@rockwerks](https://github.com/rockwerks)
+- Email: anthony.wittrock@gmail.com
 
-- Never commit `.env` file to version control
-- Use strong session secrets in production
-- Enable HTTPS in production
-- Set `NODE_ENV=production` in production environments
-- Configure CORS properly for production domains
+## 🙏 Acknowledgments
 
-## Testing the Login
+Built for film production location departments worldwide.  
+Designed by a location manager and his dog 🐕
 
-### Demo Login (without Google OAuth):
-- Click "Login"
-- Enter any username
-- Use password: `password`
-- Click "Login"
+## 📞 Support
 
-### Google OAuth Login:
-1. Ensure Google OAuth is configured in `.env`
-2. Click "Login"
-3. Click "Continue with Google"
-4. Select your Google account
-5. Grant permissions
-6. You'll be redirected back, logged in!
+- Email: anthony.wittrock@gmail.com
+- Issues: Open an issue on GitHub
 
-## Troubleshooting
+## 🗺 Roadmap
 
-### Google OAuth "Redirect URI mismatch"
-- Verify the callback URL in Google Console matches exactly
-- Check for trailing slashes
-- Ensure port number is included for localhost
+- [ ] Export to PDF
+- [ ] Calendar integration
+- [ ] Weather forecasts
+- [ ] Photo attachments
+- [ ] Mobile app (React Native)
+- [ ] Offline mode
+- [ ] Team permissions
+- [ ] Map view with route visualization
 
-### Session not persisting
-- Check that `SESSION_SECRET` is set in `.env`
-- Verify cookie settings in browser
-- Ensure both servers are running
+## 🔧 Troubleshooting
 
-### Cannot find module errors
-- Run `npm install` to install all dependencies
-- Check that all files in `/config` directory exist
+**Google OAuth "Redirect URI mismatch"**  
+→ Verify callback URL in Google Console matches exactly
 
-For more troubleshooting tips, see [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)
+**Email sharing not working**  
+→ Use Gmail App Password, not regular password
 
-## Getting Started with Create React App
+**Travel times not calculating**  
+→ Check internet connection, ensure complete addresses
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Shared links show error**  
+→ Verify CLIENT_URL is set correctly, run `npm run build`
 
-## Available Scripts
+**Port conflicts**  
+→ Frontend: 3001, Backend: 8080. Use `lsof -i` to check
 
-In the project directory, you can run:
+**Status changes not saving**  
+→ Check MongoDB connection, verify user is authenticated
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Built with ❤️ for the film production community** 🎬
