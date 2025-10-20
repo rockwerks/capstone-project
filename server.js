@@ -35,6 +35,9 @@ connectDB();
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Trust proxy - required for Render and other reverse proxies
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +53,7 @@ app.use(
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Required for cross-site cookies
     },
   })
 );
@@ -77,6 +81,9 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     // Successful authentication, redirect to frontend
+    console.log('✅ Google auth successful for user:', req.user?.email);
+    console.log('Session ID:', req.sessionID);
+    console.log('Is authenticated:', req.isAuthenticated());
     res.redirect("/");
   }
 );
@@ -296,9 +303,8 @@ app.post("/api/itineraries/:id/share", isAuthenticated, async (req, res) => {
     await itinerary.save();
 
     // Generate share link
-    const shareLink = `${
-      process.env.CLIENT_URL || "http://localhost:3000"
-    }/shared/${shareToken}`;
+    const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, '');
+    const shareLink = `${clientUrl}/shared/${shareToken}`;
 
     // Send emails to all recipients
     const emailPromises = emails.map((email) => {
@@ -637,5 +643,9 @@ app.use((req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`🚀 Server is running on port ${port}`);
+  console.log(`📦 NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔐 Session secure cookies: ${process.env.NODE_ENV === "production"}`);
+  console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'not set'}`);
+  console.log(`🔑 Google callback URL: ${process.env.GOOGLE_CALLBACK_URL || 'using auto-detect'}`);
 });
