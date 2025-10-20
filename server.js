@@ -260,6 +260,19 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 30000, // 30 seconds
+});
+
+// Verify email configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Email configuration error:', error.message);
+    console.log('⚠️  Email sharing will not work. Check EMAIL_USER and EMAIL_PASSWORD in environment variables.');
+  } else {
+    console.log('✅ Email server is ready to send messages');
+  }
 });
 
 // Share an itinerary via email
@@ -307,6 +320,8 @@ app.post("/api/itineraries/:id/share", isAuthenticated, async (req, res) => {
     const shareLink = `${clientUrl}/shared/${shareToken}`;
 
     // Send emails to all recipients
+    console.log(`📧 Sending share emails to: ${emails.join(', ')}`);
+    
     const emailPromises = emails.map((email) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -369,7 +384,20 @@ app.post("/api/itineraries/:id/share", isAuthenticated, async (req, res) => {
       return transporter.sendMail(mailOptions);
     });
 
-    await Promise.all(emailPromises);
+    try {
+      await Promise.all(emailPromises);
+      console.log(`✅ Successfully sent ${emails.length} email(s)`);
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError.message);
+      // Still return success for the sharing, but note email failure
+      return res.json({
+        success: true,
+        message: `Itinerary shared (Note: Email delivery failed - check server logs)`,
+        shareLink,
+        sharedWith: emails,
+        emailWarning: 'Email could not be sent. Share the link manually.',
+      });
+    }
 
     res.json({
       success: true,
