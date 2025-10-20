@@ -252,6 +252,12 @@ app.delete("/api/itineraries/:id", isAuthenticated, async (req, res) => {
 // ==================== SHARE ITINERARY ROUTES ====================
 
 // Configure email transporter - supports Gmail, Mailtrap, SendGrid, etc.
+console.log('📧 Configuring email transporter...');
+console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✓ Set' : '✗ Missing');
+console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✓ Set' : '✗ Missing');
+console.log('   EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com (default)');
+console.log('   EMAIL_PORT:', process.env.EMAIL_PORT || '587 (default)');
+
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -270,8 +276,10 @@ transporter.verify((error, success) => {
   if (error) {
     console.error('❌ Email configuration error:', error.message);
     console.log('⚠️  Email sharing will not work. Check EMAIL_USER and EMAIL_PASSWORD in environment variables.');
+    console.log('⚠️  Error details:', error);
   } else {
     console.log('✅ Email server is ready to send messages');
+    console.log('   Connected to:', process.env.EMAIL_HOST || 'smtp.gmail.com');
   }
 });
 
