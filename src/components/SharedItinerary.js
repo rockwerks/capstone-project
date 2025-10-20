@@ -207,6 +207,42 @@ const SharedItinerary = () => {
         </div>
 
         <div className="shared-content">
+          {/* Progress Summary */}
+          {itinerary.locations && itinerary.locations.length > 0 && (() => {
+            const completed = itinerary.locations.filter(loc => loc.status === 'completed').length;
+            const skipped = itinerary.locations.filter(loc => loc.status === 'skipped').length;
+            const pending = itinerary.locations.filter(loc => !loc.status || loc.status === 'pending').length;
+            const total = itinerary.locations.length;
+            
+            return (
+              <div className="progress-summary">
+                <h3>📊 Progress Overview</h3>
+                <div className="progress-stats">
+                  <div className="stat-item completed">
+                    <span className="stat-icon">✓</span>
+                    <span className="stat-label">Completed</span>
+                    <span className="stat-value">{completed} / {total}</span>
+                  </div>
+                  <div className="stat-item skipped">
+                    <span className="stat-icon">⊘</span>
+                    <span className="stat-label">Skipped</span>
+                    <span className="stat-value">{skipped}</span>
+                  </div>
+                  <div className="stat-item pending">
+                    <span className="stat-icon">○</span>
+                    <span className="stat-label">Pending</span>
+                    <span className="stat-value">{pending}</span>
+                  </div>
+                </div>
+                {completed > 0 && (
+                  <div className="progress-bar-container">
+                    <div className="progress-bar" style={{ width: `${(completed / total) * 100}%` }}></div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Start Location */}
           {itinerary.startLocation && itinerary.startLocation.name && (
             <div className="shared-special-location start-location">
@@ -252,10 +288,17 @@ const SharedItinerary = () => {
               
               return (
                 <React.Fragment key={index}>
-                  <div className="shared-location-card">
+                  <div className={`shared-location-card status-${location.status || 'pending'}`}>
                     <div className="location-number">{index + 1}</div>
                     <div className="location-info">
-                      <h4>{location.setName}</h4>
+                      <div className="location-header-row">
+                        <h4>{location.setName}</h4>
+                        {location.status && location.status !== 'pending' && (
+                          <span className={`status-badge ${location.status}`}>
+                            {location.status === 'completed' ? '✓ Completed' : '⊘ Skipped'}
+                          </span>
+                        )}
+                      </div>
                       <p className="address">📍 {location.address}</p>
                       
                       {(location.startTime || location.endTime) && (
