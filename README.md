@@ -11,7 +11,6 @@ A comprehensive web application designed for film production location department
 Location Scheduler helps film production teams manage complex multi-location shoots by providing:
 - **Drag-and-drop itinerary creation** with flexible location ordering
 - **Real-time status tracking** (completed, skipped, pending)  
-- **Automatic travel time calculations** between locations
 - **Secure email sharing** with password protection
 - **Production office integration** with start/end locations
 - **Mobile-responsive design** for on-set access
@@ -34,14 +33,7 @@ Location Scheduler helps film production teams manage complex multi-location sho
 - Progress bar showing completion percentage
 - Status persists across edits and shares
 
-### 🚗 Travel Time Calculator
-- Automatic driving time and distance calculations
-- Uses free OpenStreetMap + Haversine formula
-- Calculates routes between consecutive locations
-- Displays in kilometers (metric system)
-- One-click recalculation
-
-### 📧 Secure Sharing
+###  Secure Sharing
 - Share itineraries via email
 - Password-protected shared links
 - Built-in password generator with strength indicator
@@ -65,7 +57,7 @@ Location Scheduler helps film production teams manage complex multi-location sho
 
 **Database:** MongoDB Atlas
 
-**Services:** Google OAuth 2.0, Gmail SMTP, OpenStreetMap Nominatim API
+**Services:** Google OAuth 2.0, Gmail SMTP
 
 **Security:** bcrypt 6.0.0, express-session, secure cookies
 
@@ -141,11 +133,6 @@ NODE_ENV=development
 - Click **⊘ Skip** if location can't be visited
 - Click **↺ Reset** to clear status
 
-### Calculating Travel Times
-1. Click "🚗 Calculate Driving Times"
-2. View time/distance between locations
-3. Click 🔄 to recalculate
-
 ### Sharing
 1. Click "📤 Share"
 2. Enter email addresses (comma-separated)
@@ -208,12 +195,8 @@ NODE_ENV=development
 - `POST /api/itineraries/:id/unshare` - Unshare
 - `POST /api/shared/:token` - Access shared (public)
 
-### Utility
-- `POST /api/calculate-travel-times` - Calculate routes
-
 ## 🚢 Deployment
-
-See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for complete deployment instructions to Render.com.
+- Complete deployment to render.com
 
 ## 🧪 Testing
 
@@ -252,6 +235,7 @@ Designed by a location manager and their dog 🐕
 
 ## 🗺 Roadmap
 
+- [ ] Travel time calculator (requires better geocoding solution)
 - [ ] Export to PDF
 - [ ] Calendar integration
 - [ ] Weather forecasts
@@ -267,10 +251,8 @@ Designed by a location manager and their dog 🐕
 → Verify callback URL in Google Console matches exactly
 
 **Email sharing not working**  
-→ Use Gmail App Password, not regular password
-
-**Travel times not calculating**  
-→ Check internet connection, ensure complete addresses
+→ Use Gmail App Password, not regular password  
+→ Ensure EMAIL_USER and EMAIL_PASSWORD are set in environment
 
 **Shared links show error**  
 → Verify CLIENT_URL is set correctly, run `npm run build`
@@ -280,6 +262,9 @@ Designed by a location manager and their dog 🐕
 
 **Status changes not saving**  
 → Check MongoDB connection, verify user is authenticated
+
+**Production office not showing on shared itinerary**  
+→ Ensure start/end location addresses are filled in
 
 ---
 
