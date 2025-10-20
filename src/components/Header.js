@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Login from './Login';
-import './Header.css';
+import React, { useState, useEffect } from "react";
+import Login from "./Login";
+import "./Header.css";
 
 const Header = ({ title = "Location Scheduler" }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,17 +14,17 @@ const Header = ({ title = "Location Scheduler" }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/auth/user', {
-        credentials: 'include'
+      const response = await fetch("/api/auth/user", {
+        credentials: "include",
       });
       const data = await response.json();
-      
+
       if (data.isAuthenticated) {
         setIsAuthenticated(true);
         setUser(data.user);
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error("Error checking auth status:", error);
     }
   };
 
@@ -32,25 +32,25 @@ const Header = ({ title = "Location Scheduler" }) => {
     // Redirect to Google OAuth (works in both dev and production)
     // In production, this uses the proxy or same origin
     // In development with proxy, it goes to the backend
-    const isProduction = window.location.hostname !== 'localhost';
-    const authUrl = isProduction 
-      ? 'http://locationscheduler.onrender.com:8080/auth/google'  // Production: same origin
-      : 'http://localhost:8080/auth/google';  // Development: explicit backend URL
+    const isProduction = window.location.hostname !== "localhost";
+    const authUrl = isProduction
+      ? `https://locationscheduler.onrender.com:${process.env.PORT}/auth/google`
+      : `http://localhost:${process.env.PORT}/auth/google`; // Development: explicit backend URL
     window.location.href = authUrl;
   };
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        credentials: 'include'
+      await fetch("/api/auth/logout", {
+        credentials: "include",
       });
       setIsAuthenticated(false);
       setUser(null);
       setShowLoginModal(false);
       // Redirect to home after logout
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -72,7 +72,10 @@ const Header = ({ title = "Location Scheduler" }) => {
                 onLogout={handleLogout}
               />
             ) : (
-              <button className="header-login-toggle" onClick={toggleLoginModal}>
+              <button
+                className="header-login-toggle"
+                onClick={toggleLoginModal}
+              >
                 Login
               </button>
             )}
