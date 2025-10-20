@@ -236,18 +236,18 @@ MIT License
 
 ## 👤 Author
 
-**Anthony Wittrock**
+**Anth Wittrock**
 - GitHub: [@rockwerks](https://github.com/rockwerks)
-- Email: anthony.wittrock@gmail.com
+- Email: anth@rockwerks.ca
 
 ## 🙏 Acknowledgments
 
 Built for film production location departments worldwide.  
-Designed by a location manager and his dog 🐕
+Designed by a location manager and their dog 🐕
 
 ## 📞 Support
 
-- Email: anthony.wittrock@gmail.com
+- Email: anth@rockwerks.ca
 - Issues: Open an issue on GitHub
 
 ## 🗺 Roadmap

@@ -765,11 +765,11 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
               </p>
 
               {/* Start Location */}
-              {itinerary.startLocation && itinerary.startLocation.name && (
+              {itinerary.startLocation && (itinerary.startLocation.name || itinerary.startLocation.address) && (
                 <div className="special-location start-location">
                   <div className="special-location-header">
                     <span className="location-icon">📍</span>
-                    <strong>Start: {itinerary.startLocation.name}</strong>
+                    <strong>Start: {itinerary.startLocation.name || 'Production Office'}</strong>
                   </div>
                   <p className="location-address">{itinerary.startLocation.address}</p>
                   {itinerary.startLocation.time && (
@@ -828,11 +828,11 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
               </div>
 
               {/* End Location */}
-              {itinerary.endLocation && itinerary.endLocation.name && (
+              {itinerary.endLocation && (itinerary.endLocation.name || itinerary.endLocation.address) && (
                 <div className="special-location end-location">
                   <div className="special-location-header">
                     <span className="location-icon">🏁</span>
-                    <strong>End: {itinerary.endLocation.name}</strong>
+                    <strong>End: {itinerary.endLocation.name || 'Return Location'}</strong>
                   </div>
                   <p className="location-address">{itinerary.endLocation.address}</p>
                   {itinerary.endLocation.time && (

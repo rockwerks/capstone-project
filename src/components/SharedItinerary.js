@@ -244,14 +244,14 @@ const SharedItinerary = () => {
           })()}
 
           {/* Start Location */}
-          {itinerary.startLocation && itinerary.startLocation.name && (
+          {itinerary.startLocation && (itinerary.startLocation.name || itinerary.startLocation.address) && (
             <div className="shared-special-location start-location">
               <div className="location-icon-header">
                 <span className="location-icon">📍</span>
                 <h3>Starting Location</h3>
               </div>
               <div className="location-details">
-                <p className="location-name">{itinerary.startLocation.name}</p>
+                <p className="location-name">{itinerary.startLocation.name || 'Production Office'}</p>
                 {itinerary.startLocation.address && (
                   <p className="location-address">📮 {itinerary.startLocation.address}</p>
                 )}
@@ -353,14 +353,14 @@ const SharedItinerary = () => {
           </div>
 
           {/* End Location */}
-          {itinerary.endLocation && itinerary.endLocation.name && (
+          {itinerary.endLocation && (itinerary.endLocation.name || itinerary.endLocation.address) && (
             <div className="shared-special-location end-location">
               <div className="location-icon-header">
                 <span className="location-icon">🏁</span>
                 <h3>Ending Location</h3>
               </div>
               <div className="location-details">
-                <p className="location-name">{itinerary.endLocation.name}</p>
+                <p className="location-name">{itinerary.endLocation.name || 'Return Location'}</p>
                 {itinerary.endLocation.address && (
                   <p className="location-address">📮 {itinerary.endLocation.address}</p>
                 )}
