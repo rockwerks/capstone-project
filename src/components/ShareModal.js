@@ -46,7 +46,7 @@ const ShareModal = ({ itinerary, onClose, onShare }) => {
     }
 
     try {
-      const response = await fetch(`/api/itineraries/${itinerary._id}/share`, {
+      const response = await fetch(`./api/itineraries/${itinerary._id}/share`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ const ShareModal = ({ itinerary, onClose, onShare }) => {
     setError('');
 
     try {
-      const response = await fetch(`/api/itineraries/${itinerary._id}/unshare`, {
+      const response = await fetch(`./api/itineraries/${itinerary._id}/unshare`, {
         method: 'POST',
         credentials: 'include'
       });
