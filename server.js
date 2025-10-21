@@ -128,7 +128,7 @@ app.get("/api/itineraries", isAuthenticated, async (req, res) => {
   try {
     const itineraries = await Itinerary.find({ userId: req.user._id })
       .sort({ date: -1 })
-      .populate("userId", "name email profilePicture");
+      .populate("userId", "name email profilePicture startLocation endLocation");
 
     res.json({ success: true, itineraries });
   } catch (error) {
@@ -143,7 +143,7 @@ app.get("/api/itineraries/:id", isAuthenticated, async (req, res) => {
     const itinerary = await Itinerary.findOne({
       _id: req.params.id,
       userId: req.user._id,
-    }).populate("userId", "name email profilePicture");
+    }).populate("userId", "name email profilePicture startLocation endLocation");
 
     if (!itinerary) {
       return res.status(404).json({ error: "Itinerary not found" });
@@ -159,7 +159,7 @@ app.get("/api/itineraries/:id", isAuthenticated, async (req, res) => {
 // Create a new itinerary
 app.post("/api/itineraries", isAuthenticated, async (req, res) => {
   try {
-    const { title, date, locations } = req.body;
+    const { title, date, startLocation, endLocation, locations } = req.body;
 
     // Validate required fields
     if (!title || !date) {
@@ -170,12 +170,14 @@ app.post("/api/itineraries", isAuthenticated, async (req, res) => {
       userId: req.user._id,
       title,
       date,
+      startLocation: startLocation || {},
+      endLocation: endLocation || {},
       locations: locations || [],
     });
 
     const populatedItinerary = await Itinerary.findById(itinerary._id).populate(
       "userId",
-      "name email profilePicture"
+      "name email profilePicture startLocation endLocation locations"
     );
 
     res.status(201).json({
@@ -192,7 +194,7 @@ app.post("/api/itineraries", isAuthenticated, async (req, res) => {
 // Update an itinerary
 app.put("/api/itineraries/:id", isAuthenticated, async (req, res) => {
   try {
-    const { title, date, locations } = req.body;
+    const { title, date, startLocation, endLocation, locations } = req.body;
 
     const itinerary = await Itinerary.findOne({
       _id: req.params.id,
@@ -207,13 +209,15 @@ app.put("/api/itineraries/:id", isAuthenticated, async (req, res) => {
     if (title) itinerary.title = title;
     if (date) itinerary.date = date;
     if (locations) itinerary.locations = locations;
+    if (startLocation) itinerary.startLocation = startLocation;
+    if (endLocation) itinerary.endLocation = endLocation;
     itinerary.updatedAt = Date.now();
 
     await itinerary.save();
 
     const updatedItinerary = await Itinerary.findById(itinerary._id).populate(
       "userId",
-      "name email profilePicture"
+      "name email profilePicture startLocation endLocation locations"
     );
 
     res.json({

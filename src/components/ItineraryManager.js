@@ -184,6 +184,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
         credentials: 'include'
       });
       const data = await response.json();
+      console.log('Fetched itineraries:', data);
       
       if (data.success) {
         setItineraries(data.itineraries);
@@ -199,6 +200,8 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(name, value);
+    // This code isn't being called
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -206,6 +209,8 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
   };
 
   const handleStartLocationChange = (field, value) => {
+   
+    console.log('Start location change', field, value);
     setFormData(prev => ({
       ...prev,
       startLocation: {
@@ -216,6 +221,8 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
   };
 
   const handleEndLocationChange = (field, value) => {
+    // This code isn't being called
+    console.log('End location change', field, value);
     setFormData(prev => ({
       ...prev,
       endLocation: {
@@ -249,6 +256,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
           setItineraries(itineraries.map(it => 
             it._id === editingId ? data.itinerary : it
           ));
+          fetchItineraries();
         } else {
           // Add new itinerary to the list
           setItineraries([data.itinerary, ...itineraries]);
@@ -491,6 +499,7 @@ const ItineraryManager = ({ user, isAuthenticated }) => {
         <div className="itinerary-form">
           <h3>{editingId ? '✏️ Edit Itinerary' : 'Create New Itinerary'}</h3>
           <form onSubmit={handleSubmit}>
+            
             <div className="form-group">
               <label>Title *</label>
               <input
